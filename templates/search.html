@@ -1,0 +1,91 @@
+{% extends 'layout.html' %}
+
+{% block title %}Ricerca{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="main-content">
+        <h1>Ricerca Articoli</h1>
+        
+        <div class="search-box">
+            <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="q" class="form-control search-input" 
+                           placeholder="Cerca destinazioni, attività, consigli..." 
+                           value="{{ search_term }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Cerca</button>
+            </form>
+        </div>
+        
+        {% if search_term %}
+            <h2>Risultati per "{{ search_term | safe }}"</h2>
+            
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ post.title }}</h3>
+                            <div class="card-meta">
+                                <span><i class="fas fa-user"></i> {{ post.username }}</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ post.publish_date }}</span>
+                                {% if post.category %}
+                                    <span class="workshop-badge">{{ post.category }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="card-text">
+                                {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                            </p>
+                            <a href="{{ url_for('view_post', post_id=post.id) }}" class="btn btn-primary">Leggi tutto</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-warning">
+                    Nessun risultato trovato per "{{ search_term }}". Prova con altre parole chiave.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    <div class="sidebar">
+        <h3 class="sidebar-title">Categorie</h3>
+        <div class="category-list">
+            <a href="{{ url_for('search', q='Città d\'Arte') }}" class="category-item">
+                <i class="fas fa-landmark"></i> Città d'Arte
+            </a>
+            <a href="{{ url_for('search', q='Mare') }}" class="category-item">
+                <i class="fas fa-umbrella-beach"></i> Mare
+            </a>
+            <a href="{{ url_for('search', q='Montagna') }}" class="category-item">
+                <i class="fas fa-mountain"></i> Montagna
+            </a>
+            <a href="{{ url_for('search', q='Gastronomia') }}" class="category-item">
+                <i class="fas fa-utensils"></i> Gastronomia
+            </a>
+            <a href="{{ url_for('search', q='Campagna') }}" class="category-item">
+                <i class="fas fa-tree"></i> Campagna
+            </a>
+        </div>
+        
+        <h3 class="sidebar-title">Ricerche Popolari</h3>
+        <ul class="sidebar-list">
+            <li><a href="{{ url_for('search', q='Roma') }}">Roma</a></li>
+            <li><a href="{{ url_for('search', q='Firenze') }}">Firenze</a></li>
+            <li><a href="{{ url_for('search', q='Venezia') }}">Venezia</a></li>
+            <li><a href="{{ url_for('search', q='Sicilia') }}">Sicilia</a></li>
+            <li><a href="{{ url_for('search', q='Lago di Como') }}">Lago di Como</a></li>
+        </ul>
+        
+        <h3 class="sidebar-title">Filtri Comuni</h3>
+        <ul class="sidebar-list">
+            <li><a href="{{ url_for('search', q='ristoranti') }}">Ristoranti</a></li>
+            <li><a href="{{ url_for('search', q='hotel') }}">Hotel</a></li>
+            <li><a href="{{ url_for('search', q='musei') }}">Musei</a></li>
+            <li><a href="{{ url_for('search', q='spiagge') }}">Spiagge</a></li>
+            <li><a href="{{ url_for('search', q='escursioni') }}">Escursioni</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

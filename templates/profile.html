@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+
+{% block title %}Profilo di {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="main-content">
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                    {% set default_img = url_for('static', filename='profile_images/default.jpg') %}
+                    <div style="flex-shrink: 0;">
+                        <img src="{{ url_for('static', filename='profile_images/' + user.username + '.jpg') }}" 
+                             alt="{{ user.username }}" class="profile-img" 
+                             onerror="this.onerror=null; this.src='{{ default_img }}';">
+                    </div>
+                    <div>
+                        <h1>{{ user.username }}</h1>
+                        <p>{{ user.email }}</p>
+                        <p>{{ user.profile_bio }}</p>
+                        <p><small>Iscritto dal: {{ user.created_at }}</small></p>
+                    </div>
+                </div>
+                
+                <h2>Articoli pubblicati</h2>
+                {% if posts %}
+                    {% for post in posts %}
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">{{ post.title }}</h3>
+                                <p class="card-text">
+                                    {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                                </p>
+                                <a href="{{ url_for('view_post', post_id=post.id) }}" class="btn btn-primary">Leggi tutto</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Nessun articolo pubblicato.</p>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Vulnerabilità IDOR: Informazioni private visibili a chiunque -->
+        <h2>Attività recenti</h2>
+        <div class="user-activity">
+            <div class="activity-card">
+                <div class="activity-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="activity-content">
+                    <h4>Destinazione visitata</h4>
+                    <p>{{ user.username }} ha visitato <strong>Roma</strong></p>
+                    <small>3 giorni fa</small>
+                </div>
+            </div>
+            <div class="activity-card">
+                <div class="activity-icon"><i class="fas fa-camera"></i></div>
+                <div class="activity-content">
+                    <h4>Nuove foto caricate</h4>
+                    <p>{{ user.username }} ha caricato <strong>12 nuove foto</strong></p>
+                    <small>1 settimana fa</small>
+                </div>
+            </div>
+            <div class="activity-card">
+                <div class="activity-icon"><i class="fas fa-heart"></i></div>
+                <div class="activity-content">
+                    <h4>Post preferito</h4>
+                    <p>{{ user.username }} ha messo like a <strong>I tesori nascosti dell'Emilia Romagna</strong></p>
+                    <small>2 settimane fa</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <h3 class="sidebar-title">Azioni utente</h3>
+        <ul class="sidebar-list">
+            {% if session.user_id == user.id %}
+                <li><a href="{{ url_for('change_password') }}">Cambia password</a></li>
+            {% endif %}
+            
+            {% if session.is_admin %}
+                <li><a href="{{ url_for('admin') }}">Pannello admin</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'layout.html' %}
+
+{% block title %}Amministrazione{% endblock %}
+
+{% block content %}
+<h1>Pannello Amministrativo</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Gestione utenti</h2>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Admin</th>
+                    <th>Data registrazione</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{% if user.is_admin %}Si{% else %}No{% endif %}</td>
+                        <td>{{ user.created_at }}</td>
+                        <td>
+                            <a href="{{ url_for('profile', user_id=user.id) }}" class="btn btn-secondary btn-sm">Profilo</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Gestione newsletter</h2>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Nome</th>
+                    <th>Data iscrizione</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscriptions %}
+                    <tr>
+                        <td>{{ sub.id }}</td>
+                        <td>{{ sub.email }}</td>
+                        <td>{{ sub.name }}</td>
+                        <td>{{ sub.subscribed_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p>
+    <a href="{{ url_for('admin_system') }}" class="btn btn-primary">Gestione Sistema</a>
+</p>
+{% endblock %}

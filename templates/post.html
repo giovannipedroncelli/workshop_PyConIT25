@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="main-content">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ post.title }}</h1>
+                <div class="card-meta">
+                    <span><i class="fas fa-user"></i> <a href="{{ url_for('profile', user_id=post.author_id) }}">{{ post.username }}</a></span>
+                    <span><i class="fas fa-calendar-alt"></i> {{ post.publish_date }}</span>
+                    {% if post.category %}
+                        <span class="workshop-badge">{{ post.category }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if post.image_url %}
+                    <img src="{{ post.image_url }}" alt="{{ post.title }}" class="img-fluid">
+                {% endif %}
+                
+                <div class="post-content">
+                    {{ post.content | safe }}
+                </div>
+            </div>
+        </div>
+        
+        <h3>Commenti</h3>
+        
+        <form action="{{ url_for('view_post', post_id=post.id) }}" method="GET" class="search-form">
+            <div class="form-group">
+                <input type="text" name="search" class="form-control" placeholder="Cerca nei commenti" value="{{ search_term }}">
+                <button type="submit" class="btn btn-secondary">Cerca</button>
+            </div>
+        </form>
+        
+        {% if session.user_id %}
+            <form action="{{ url_for('add_comment', post_id=post.id) }}" method="POST" class="comment-form">
+                <div class="form-group">
+                    <label for="content" class="form-label">Aggiungi un commento</label>
+                    <textarea name="content" id="content" class="form-control" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Pubblica</button>
+            </form>
+        {% else %}
+            <div class="alert alert-warning">
+                Devi essere <a href="{{ url_for('login', next=url_for('view_post', post_id=post.id)) }}">loggato</a> per lasciare un commento.
+            </div>
+        {% endif %}
+        
+        {% if comments %}
+            <div class="comments-container">
+                {% for comment in comments %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <img src="{{ url_for('static', filename='profile_images/' + comment.username + '.jpg') }}" 
+                                 alt="{{ comment.username }}" class="comment-avatar" 
+                                 onerror="this.onerror=null; this.src='{{ url_for(\'static\', filename=\'profile_images/default.jpg\') }}';">
+                            <div>
+                                <span class="comment-username"><a href="{{ url_for('profile', user_id=comment.user_id) }}">{{ comment.username }}</a></span>
+                                <div class="comment-meta">{{ comment.created_at }}</div>
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            {{ comment.content | safe }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-comment-alt"></i> Nessun commento. Sii il primo a condividere la tua opinione!
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="sidebar">
+        <h3 class="sidebar-title">Categorie</h3>
+        <ul class="sidebar-list">
+            <li><a href="{{ url_for('search', q='Città d\'Arte') }}">Città d'Arte</a></li>
+            <li><a href="{{ url_for('search', q='Mare') }}">Mare</a></li>
+            <li><a href="{{ url_for('search', q='Montagna') }}">Montagna</a></li>
+            <li><a href="{{ url_for('search', q='Gastronomia') }}">Gastronomia</a></li>
+            <li><a href="{{ url_for('search', q='Campagna') }}">Campagna</a></li>
+        </ul>
+        
+        <h3 class="sidebar-title">Risorse</h3>
+        <ul class="sidebar-list">
+            <li><a href="{{ url_for('download', file='guide/venezia.pdf') }}">Guida di Venezia</a></li>
+            <li><a href="{{ url_for('download', file='guide/toscana.pdf') }}">Guida della Toscana</a></li>
+            <li><a href="{{ url_for('download', file='guide/sicilia.pdf') }}">Guida della Sicilia</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

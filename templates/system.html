@@ -1,0 +1,127 @@
+{% extends 'layout.html' %}
+
+{% block title %}Pannello di Amministrazione Sistema{% endblock %}
+
+{% block content %}
+<h1>Pannello di Amministrazione Sistema</h1>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-server"></i></div>
+        <div class="stat-content">
+            <h3>Stato Server</h3>
+            <p class="stat-value">Online</p>
+            <p class="stat-description">Uptime: 15 giorni, 7 ore</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-database"></i></div>
+        <div class="stat-content">
+            <h3>Database</h3>
+            <p class="stat-value">Connesso</p>
+            <p class="stat-description">SQLite v3.35.5</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-content">
+            <h3>Utenti attivi</h3>
+            <p class="stat-value">7</p>
+            <p class="stat-description">Ultimo accesso: 10 minuti fa</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="stat-content">
+            <h3>Sicurezza</h3>
+            <p class="stat-value">Moderata</p>
+            <p class="stat-description">Ultima scansione: ieri</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Strumenti di Diagnostica</h2>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin_system') }}" method="POST">
+            <div class="form-group">
+                <label for="action" class="form-label">Seleziona un'azione:</label>
+                <select id="action" name="action" class="form-control">
+                    <option value="disk_space">Controllo spazio disco</option>
+                    <option value="network">Test connettività di rete</option>
+                </select>
+            </div>
+            
+            <div id="disk-options">
+                <div class="form-group">
+                    <label for="directory" class="form-label">Directory da analizzare:</label>
+                    <input type="text" id="directory" name="directory" class="form-control" value="/">
+                </div>
+            </div>
+            
+            <div id="network-options" style="display: none;">
+                <div class="form-group">
+                    <label for="host" class="form-label">Host da verificare:</label>
+                    <input type="text" id="host" name="host" class="form-control" value="localhost">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Esegui diagnostica</button>
+        </form>
+        
+        {% if output %}
+            <div class="output-console">
+                <h3>Risultato diagnostica:</h3>
+                <pre>{{ output }}</pre>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h2>Log di sistema</h2>
+    </div>
+    <div class="card-body">
+        <div class="log-entries">
+            <div class="log-entry log-warning">
+                <span class="log-time">11/05/2025 19:45:03</span>
+                <span class="log-level">AVVISO</span>
+                <span class="log-message">Utilizzo dello spazio di archiviazione superiore al 75%</span>
+            </div>
+            <div class="log-entry log-info">
+                <span class="log-time">11/05/2025 17:32:18</span>
+                <span class="log-level">INFO</span>
+                <span class="log-message">Backup del database completato con successo</span>
+            </div>
+            <div class="log-entry log-error">
+                <span class="log-time">10/05/2025 23:14:55</span>
+                <span class="log-level">ERRORE</span>
+                <span class="log-message">Tentativo di accesso fallito - IP: 198.51.100.123</span>
+            </div>
+            <div class="log-entry log-info">
+                <span class="log-time">10/05/2025 14:02:31</span>
+                <span class="log-level">INFO</span>
+                <span class="log-message">Aggiornamento del sistema completato</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('action').addEventListener('change', function() {
+        const diskOptions = document.getElementById('disk-options');
+        const networkOptions = document.getElementById('network-options');
+        
+        if (this.value === 'disk_space') {
+            diskOptions.style.display = 'block';
+            networkOptions.style.display = 'none';
+        } else if (this.value === 'network') {
+            diskOptions.style.display = 'none';
+            networkOptions.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}
