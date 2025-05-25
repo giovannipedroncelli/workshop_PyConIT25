@@ -56,7 +56,7 @@
                         <div class="comment-header">
                             <img src="{{ url_for('static', filename='profile_images/' + comment.username + '.jpg') }}" 
                                  alt="{{ comment.username }}" class="comment-avatar" 
-                                 onerror="this.onerror=null; this.src='{{ url_for(\'static\', filename=\'profile_images/default.jpg\') }}';">
+                                 onerror="this.onerror=null; this.src='/static/profile_images/default.jpg';">
                             <div>
                                 <span class="comment-username"><a href="{{ url_for('profile', user_id=comment.user_id) }}">{{ comment.username }}</a></span>
                                 <div class="comment-meta">{{ comment.created_at }}</div>
