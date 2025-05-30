@@ -32,6 +32,7 @@
                 <li><a href="{{ url_for('change_password') }}" class="nav-link">Impostazioni</a></li>
             {% endif %}
             {% if session.is_admin %}
+                <li><a href="{{ url_for('search_users') }}" class="nav-link">👥 Utenti</a></li>
                 <li><a href="{{ url_for('admin') }}" class="nav-link">Admin</a></li>
                 <li><a href="{{ url_for('admin_system') }}" class="nav-link">Sistema</a></li>
             {% endif %}

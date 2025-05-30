@@ -9,7 +9,13 @@
             <div class="card-body">
                 <h1 class="card-title">{{ post.title }}</h1>
                 <div class="card-meta">
-                    <span><i class="fas fa-user"></i> <a href="{{ url_for('profile', user_id=post.author_id) }}">{{ post.username }}</a></span>
+                    <span><i class="fas fa-user"></i> 
+                        {% if session.get('is_admin') or session.user_id == post.author_id %}
+                            <a href="{{ url_for('profile', user_id=post.author_id) }}">{{ post.username }}</a>
+                        {% else %}
+                            {{ post.username }}
+                        {% endif %}
+                    </span>
                     <span><i class="fas fa-calendar-alt"></i> {{ post.publish_date }}</span>
                     {% if post.category %}
                         <span class="workshop-badge">{{ post.category }}</span>
@@ -58,7 +64,13 @@
                                  alt="{{ comment.username }}" class="comment-avatar" 
                                  onerror="this.onerror=null; this.src='/static/profile_images/default.jpg';">
                             <div>
-                                <span class="comment-username"><a href="{{ url_for('profile', user_id=comment.user_id) }}">{{ comment.username }}</a></span>
+                                <span class="comment-username">
+                                    {% if session.get('is_admin') or session.user_id == comment.user_id %}
+                                        <a href="{{ url_for('profile', user_id=comment.user_id) }}">{{ comment.username }}</a>
+                                    {% else %}
+                                        {{ comment.username }}
+                                    {% endif %}
+                                </span>
                                 <div class="comment-meta">{{ comment.created_at }}</div>
                             </div>
                         </div>
@@ -87,9 +99,9 @@
         
         <h3 class="sidebar-title">Risorse</h3>
         <ul class="sidebar-list">
-            <li><a href="{{ url_for('download', file='guide/venezia.pdf') }}">Guida di Venezia</a></li>
-            <li><a href="{{ url_for('download', file='guide/toscana.pdf') }}">Guida della Toscana</a></li>
-            <li><a href="{{ url_for('download', file='guide/sicilia.pdf') }}">Guida della Sicilia</a></li>
+            <li><a href="{{ url_for('download', file='uploads/guide/venezia.pdf') }}">Guida di Venezia</a></li>
+            <li><a href="{{ url_for('download', file='uploads/guide/toscana.pdf') }}">Guida della Toscana</a></li>
+            <li><a href="{{ url_for('download', file='uploads/guide/sicilia.pdf') }}">Guida della Sicilia</a></li>
         </ul>
     </div>
 </div>

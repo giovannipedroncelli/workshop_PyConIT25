@@ -50,7 +50,7 @@
                 <label for="action" class="form-label">Seleziona un'azione:</label>
                 <select id="action" name="action" class="form-control">
                     <option value="disk_space">Controllo spazio disco</option>
-                    <option value="network">Test connettività di rete</option>
+                    <option value="network">Visualizza informazioni di rete</option>
                 </select>
             </div>
             
@@ -63,7 +63,7 @@
             
             <div id="network-options" style="display: none;">
                 <div class="form-group">
-                    <label for="host" class="form-label">Host da verificare:</label>
+                    <label for="host" class="form-label">Informazioni rete per host:</label>
                     <input type="text" id="host" name="host" class="form-control" value="localhost">
                 </div>
             </div>
@@ -71,11 +71,35 @@
             <button type="submit" class="btn btn-primary">Esegui diagnostica</button>
         </form>
         
+        {% if command_executed %}
+            <div class="output-console">
+                <h4>Comando eseguito:</h4>
+                <code>{{ command_executed }}</code>
+            </div>
+        {% endif %}
+        
+        {% if error %}
+            <div class="output-console error-console">
+                <h3>Errore:</h3>
+                <pre class="error-text">{{ error }}</pre>
+            </div>
+        {% endif %}
+        
         {% if output %}
             <div class="output-console">
                 <h3>Risultato diagnostica:</h3>
                 <pre>{{ output }}</pre>
             </div>
+            
+            <style>
+                .error-console {
+                    background-color: #ffdddd;
+                    border-left: 4px solid #ff5555;
+                }
+                .error-text {
+                    color: #cc0000;
+                }
+            </style>
         {% endif %}
     </div>
 </div>

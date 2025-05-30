@@ -21,12 +21,17 @@ import sqlite3
 import subprocess
 from flask import Flask, render_template, request, redirect, url_for, session, g, abort, send_file
 from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
+
+
 
 # Configurazione dell'applicazione
 app = Flask(__name__)
 app.secret_key = 'workshop_pycon_italia_2025'
 app.config['DATABASE'] = 'viaggio_italia.db'
 app.config['UPLOAD_FOLDER'] = 'uploads'
+# Disabilita il flag HttpOnly per permettere la vulnerabilità XSS completa (NON FARE MAI IN PRODUZIONE!)
+app.config['SESSION_COOKIE_HTTPONLY'] = False
 
 # Assicuriamo che la directory per gli upload esista
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -154,18 +159,49 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
+# Route per la ricerca utenti (VULNERABILE a SQL injection - DEMO SCOPO DIDATTICO)
+@app.route('/users')
+def search_users():
+    """
+    Ricerca utenti vulnerabile a SQL injection.
+    SCOPO DIDATTICO: Mostra come un attaccante può esfiltrary dati sensibili.
+    """
+    # Controllo di autenticazione: solo utenti loggati possono accedere
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    db = get_db()
+    search_term = request.args.get('search', '')
+    users = []
+    
+    if search_term:
+        try:
+            # VULNERABILITÀ CRITICA: Query SQL concatenata senza sanitizzazione
+            # Un attaccante può inserire: ' UNION SELECT id, username, password, email FROM users--
+            query = f"SELECT DISTINCT id, username, email, 'Utente registrato' as info FROM users WHERE username LIKE '%{search_term}%' OR email LIKE '%{search_term}%'"
+            print(f"[DEBUG] Query eseguita: {query}")  # Per debug durante il workshop
+            users = db.execute(query).fetchall()
+        except Exception as e:
+            print(f"[ERROR] Errore SQL: {e}")  # Per debug durante il workshop
+            users = []
+    
+    return render_template('users_search.html', users=users, search_term=search_term)
+
 # Route per il profilo utente (vulnerabile a IDOR)
 @app.route('/profile/<int:user_id>')
 def profile(user_id):
+    # Controllo di autenticazione: solo utenti loggati possono accedere
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # VULNERABILITÀ IDOR: Gli utenti autenticati possono vedere qualsiasi profilo
+    # Nessun controllo se l'utente può accedere a questo specifico profilo
+    
     db = get_db()
     user = db.execute('SELECT * FROM users WHERE id = ?', [user_id]).fetchone()
     
     if not user:
         abort(404)
-    
-    # IDOR: qualsiasi utente può vedere informazioni private di altri utenti
-    # Nota: abbiamo sostituito i messaggi con attività utente per maggiore realismo
-    # ma manteniamo la vulnerabilità IDOR permettendo a chiunque di vedere il profilo
     
     posts = db.execute('SELECT * FROM blog_posts WHERE author_id = ? ORDER BY publish_date DESC', [user_id]).fetchall()
     
@@ -190,36 +226,44 @@ def admin_system():
         return redirect(url_for('login', next=url_for('admin_system')))
     
     output = None
+    error = None
+    command_executed = None
     
     if request.method == 'POST':
         action = request.form.get('action')
         
-        if action == 'disk_space':
-            # Vulnerabile a Command Injection
-            directory = request.form.get('directory', '/')
-            command = f"du -sh {directory}"
-            output = subprocess.check_output(command, shell=True, text=True)
-        
-        elif action == 'network':
-            # Vulnerabile a Command Injection
-            host = request.form.get('host', 'localhost')
-            command = f"ping -c 3 {host}"
-            try:
-                output = subprocess.check_output(command, shell=True, text=True)
-            except subprocess.CalledProcessError:
-                output = "Errore nell'esecuzione del comando"
+        try:
+            if action == 'disk_space':
+                # Usa un comando più sicuro che elenca solo alcune directory
+                directory = request.form.get('directory', '/')
+                
+                # Limita il comando per evitare errori di permesso
+                command = f"echo 'Spazio disco per {directory}:'; df -h {directory}"
+                command_executed = command
+                output = subprocess.check_output(command, shell=True, text=True, stderr=subprocess.STDOUT)
+            
+            elif action == 'network':
+                # Comando più semplice per la connettività di rete
+                host = request.form.get('host', 'localhost')
+                command = f"echo 'Connettività di rete per {host}:'; hostname -I"
+                command_executed = command
+                output = subprocess.check_output(command, shell=True, text=True, stderr=subprocess.STDOUT)
+            else:
+                error = f"Azione non valida: {action}"
+        except subprocess.CalledProcessError as e:
+            error = f"Errore nell'esecuzione del comando: {e}"
+            output = e.output if hasattr(e, 'output') else "Nessun output disponibile"
+        except Exception as e:
+            error = f"Errore imprevisto: {str(e)}"
     
-    return render_template('system.html', output=output)
+    return render_template('system.html', output=output, error=error, command_executed=command_executed)
 
 # Route per il download di file (vulnerabile a Path Traversal)
 @app.route('/download')
-def download():
+def download(): 
     filename = request.args.get('file')
-    
     if not filename:
         abort(400)
-    
-    # Vulnerabile a Path Traversal
     return send_file(filename)
 
 # Route per la modifica password (vulnerabile a CSRF)
